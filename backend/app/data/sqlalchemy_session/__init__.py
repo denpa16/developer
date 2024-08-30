@@ -29,7 +29,7 @@ async def get_db_session() -> AsyncSession:
     async with async_session() as session:
         try:
             yield session
-        finally:
+        except Exception:
             await session.rollback()
 
         await session.commit()
