@@ -10,13 +10,13 @@ class DatabaseSettings(BaseSettings):
     """Настройки базы данных."""
 
     scheme: str = "postgresql+asyncpg"
+    port: int = getenv("POSTGRES_PORT", "5432")
     host: str = getenv("POSTGRES_HOST", "db")
-    port: int = getenv("POSTGRES_PORT")
     user: str = getenv("POSTGRES_USER")
     password: str = getenv("POSTGRES_PASSWORD")
-    db: str = getenv("POSTGRES_DB")
+    db: str = getenv("POSTGRES_DB", "postgres")
     dsn: PostgresDsn | None | str = None
-    echo: bool = False
+    echo: bool = True
 
     @field_validator("dsn", mode="before")
     @classmethod
@@ -29,6 +29,7 @@ class DatabaseSettings(BaseSettings):
             username=values.data.get("user"),
             password=values.data.get("password"),
             host=values.data.get("host"),
+            port=values.data.get("port"),
             path=values.data.get("db"),
         ).unicode_string()
 

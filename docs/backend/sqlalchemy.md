@@ -1,15 +1,15 @@
-from uuid import UUID
+## Запросы
 
-from fastapi import APIRouter, Path
-from sqlalchemy import delete, select
-from sqlalchemy.ext.asyncio import AsyncSession
+### 1. Получение списка объектов
+### 2. Получение одного объекта
+### 3. Создание объекта
+### 4. Удаление объекта
+### 5. Создание нескольких объектов одновременно
+### 6. Удаление всех объектов
+### 7. Обновление нескольких объектов одновременно
 
-from app.data.models import Project
-from app.data.sqlalchemy_session import async_session
 
-router = APIRouter(prefix="/projects", tags=["Projects"])
-
-
+```
 @router.get("/")
 async def get_list(session: AsyncSession = async_session):
     """Список проектов."""
@@ -18,8 +18,7 @@ async def get_list(session: AsyncSession = async_session):
 
 
 @router.get("/{id}")
-async def get_retrieve(id: UUID = Path(alias="id"), session: AsyncSession = async_session):
-    """Получить проект."""
+async def get_one(id: UUID = Path(alias="id"), session: AsyncSession = async_session):
     result = await session.execute(select(Project).where(Project.id == id))
     return result.scalars().one()
 
@@ -42,7 +41,8 @@ async def bulk_create(session: AsyncSession = async_session):
 
 @router.get("/delete_all")
 async def delete_all(session: AsyncSession = async_session):
-    """Удалить все проекты."""
     await session.execute(delete(Project))
     result = await session.execute(select(Project))
     return result.scalars().all()
+
+```

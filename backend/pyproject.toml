@@ -32,6 +32,8 @@ ruff = "0.0.*"
 [tool.ruff]
 select = ["ALL"]
 ignore = [
+    "A002",
+    "ANN201",
     "A003",
     "EXE002",
     "D100",
@@ -39,6 +41,7 @@ ignore = [
     "RUF002",
     "FBT001",
     "FBT002",
+    "B008",
 ]
 exclude = [
     "**/migrations/**",
