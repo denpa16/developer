@@ -20,7 +20,7 @@ class AsyncSessionBuilder:
         return self.session
 
 
-session_builder = AsyncSessionBuilder(database_url=DATABASE_URL, echo=settings.postgres.echo)
+session_builder = AsyncSessionBuilder(database_url=DATABASE_URL, echo=settings.database.echo)
 
 
 async def get_db_session() -> AsyncSession:
