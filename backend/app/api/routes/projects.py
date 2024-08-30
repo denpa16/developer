@@ -1,6 +1,4 @@
-from uuid import UUID
-
-from fastapi import APIRouter, Path
+from fastapi import APIRouter
 from sqlalchemy import delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -15,13 +13,6 @@ async def get_list(session: AsyncSession = async_session):
     """Список проектов."""
     result = await session.execute(select(Project))
     return result.scalars().all()
-
-
-@router.get("/{id}")
-async def get_retrieve(id: UUID = Path(alias="id"), session: AsyncSession = async_session):
-    """Получить проект."""
-    result = await session.execute(select(Project).where(Project.id == id))
-    return result.scalars().one()
 
 
 @router.get("/bulk_create")
