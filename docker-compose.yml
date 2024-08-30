@@ -1,0 +1,31 @@
+version: '3.8'
+
+x-app_environment: &app_environment
+  environment:
+    - SECRET_KEY
+    - POSTGRES_PASSWORD
+    - POSTGRES_HOST
+    - POSTGRES_PORT
+    - POSTGRES_NAME
+    - POSTGRES_USER
+    - POSTGRES_DB
+
+services:
+
+  backend:
+    build:
+      context: ./backend
+    <<: *app_environment
+
+  db:
+    build:
+      context: ./db
+    volumes:
+      - postgresdata:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_PASSWORD
+      - POSTGRES_PORT
+      - POSTGRES_NAME
+      - POSTGRES_USER
+      - POSTGRES_HOST
+      - POSTGRES_DB

@@ -1,0 +1,5 @@
+[general]
+ignore=B6,CC1
+contrib = contrib-title-conventional-commits,CC1
+[title-max-length]
+line-length=100
