@@ -1,12 +1,11 @@
 from fastapi import APIRouter
-from serial.meta import Properties
 from sqlalchemy import delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.data.models import Property
 from app.data.sqlalchemy_session import async_session
 
-router = APIRouter(prefix="/properties", tags=["Propertys"])
+router = APIRouter(prefix="/properties", tags=["Properties"])
 
 
 @router.get("/")
@@ -19,7 +18,7 @@ async def get_list(session: AsyncSession = async_session):
 @router.get("/bulk_create")
 async def bulk_create(session: AsyncSession = async_session):
     """Создание этажи."""
-    result = await session.execute(select(Properties))
+    result = await session.execute(select(Property))
     return result.scalars().all()
 
 
