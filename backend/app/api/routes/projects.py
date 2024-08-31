@@ -47,3 +47,13 @@ async def retrieve_project(
     """Получение проекта."""
     result = await session.execute(select(Project).where(Project.alias == alias))
     return result.scalars().one()
+
+
+@router.get("/{alias}/genplan/")
+async def project_genplan(
+    alias: str = Path(description="", alias="alias"),
+    session: AsyncSession = async_session,
+):
+    """Получение проекта."""
+    result = await session.execute(select(Project).where(Project.alias == alias))
+    return result.scalars().one()
