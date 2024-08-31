@@ -34,3 +34,23 @@ services:
     image: redis:6.2-alpine
     volumes:
       - redisdata:/data
+
+  celery:
+    build:
+      context: ./backend
+    command: poetry run celery -A app.celery worker -l info -c 1 -n celery@dats.com -Q celery
+    depends_on:
+      - backend
+      - redis
+      - db
+    <<: *app_environment
+
+  celery-beat:
+    build:
+      context: ./backend
+    command: poetry run celery -A app.celery worker -l info -E -B -Q periodic
+    depends_on:
+      - backend
+      - redis
+      - db
+    <<: *app_environment
