@@ -4,7 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload
 
 from app.data.models import Building, Floor, Project, Section
-from app.data.sqlalchemy_session import async_session
+from app.dependencies.resourses import async_session
 
 router = APIRouter(prefix="/floors", tags=["Floors"])
 

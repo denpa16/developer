@@ -3,7 +3,7 @@ from sqlalchemy import delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.data.models import Property
-from app.data.sqlalchemy_session import async_session
+from app.dependencies.resourses import async_session
 
 router = APIRouter(prefix="/properties", tags=["Properties"])
 

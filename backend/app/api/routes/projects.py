@@ -3,7 +3,7 @@ from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.data.models import Project, Property
-from app.data.sqlalchemy_session import async_session
+from app.dependencies.resourses import async_session
 
 router = APIRouter(prefix="/projects", tags=["Projects"])
 
