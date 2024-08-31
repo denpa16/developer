@@ -6,11 +6,16 @@ from fastapi import APIRouter, Path
 from sqlalchemy import func, select
 
 from app.data.models import Project, Property
-from app.dependencies.resourses import async_session, projects_paginator_class
+from app.dependencies.resourses import (
+    async_session,
+    projects_filter_class,
+    projects_paginator_class,
+)
 
 if TYPE_CHECKING:
     from sqlalchemy.ext.asyncio import AsyncSession
 
+    from app.resources.filters.projects import ProjectFilter
     from app.resources.paginations.projects import ProjectLimitOffsetPagination
 
 router = APIRouter(prefix="/projects", tags=["Projects"])
@@ -19,7 +24,8 @@ router = APIRouter(prefix="/projects", tags=["Projects"])
 @router.get("/")
 async def list_projects(
     session: AsyncSession = async_session,
-    pagination: ProjectLimitOffsetPagination = projects_paginator_class,
+    pagination_class: ProjectLimitOffsetPagination = projects_paginator_class,
+    _: ProjectFilter = projects_filter_class,
 ):
     """Список проектов."""
     subquery_max_price = (
@@ -36,7 +42,7 @@ async def list_projects(
             func.coalesce(subquery_max_price.c.max_price, 0).label("max_price"),
         ).outerjoin(subquery_max_price, subquery_max_price.c.project_id == Project.id),
     )
-    return pagination(results=result.scalars().all())
+    return pagination_class(results=result.scalars().all())
 
 
 @router.get("/{alias}")
