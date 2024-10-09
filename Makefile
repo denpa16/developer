@@ -4,30 +4,30 @@ COMPOSE_FILES := -f docker-compose.yml -f docker-compose.override.yml
 
 
 alembicinit:
-	docker-compose $(COMPOSE_FILES) exec backend poetry run alembic init "$(c)"
+	docker compose $(COMPOSE_FILES) exec backend poetry run alembic init "$(c)"
 # e.g.
 # make alembicinit c=./app/data/migrations
 
 makemigrations:
-	docker-compose $(COMPOSE_FILES) exec backend poetry run alembic revision --autogenerate -m "$(c)"
+	docker compose $(COMPOSE_FILES) exec backend poetry run alembic revision --autogenerate -m "$(c)"
 
 migrate:
-	docker-compose $(COMPOSE_FILES) exec backend poetry run alembic upgrade head
+	docker compose $(COMPOSE_FILES) exec backend poetry run alembic upgrade head
 
 downgrate:
-	docker-compose $(COMPOSE_FILES) exec backend poetry run alembic downgrade "$(c)"
+	docker compose $(COMPOSE_FILES) exec backend poetry run alembic downgrade "$(c)"
 
 tests:
-	docker-compose $(COMPOSE_FILES) exec backend poetry run pytest $(c)
+	docker compose $(COMPOSE_FILES) exec backend poetry run pytest $(c)
 
 lock:
-	docker-compose $(COMPOSE_FILES) exec backend poetry lock
+	docker compose $(COMPOSE_FILES) exec backend poetry lock
 
 linters:
-	docker-compose $(COMPOSE_FILES) exec backend poetry run ruff check . --fix
+	docker compose $(COMPOSE_FILES) exec backend poetry run ruff check . --fix
 
 format:
-	docker-compose $(COMPOSE_FILES) exec backend poetry run ruff format .
+	docker compose $(COMPOSE_FILES) exec backend poetry run ruff format .
 
 lint-check:
-	docker-compose $(COMPOSE_FILES) exec backend poetry run ruff check .
+	docker compose $(COMPOSE_FILES) exec backend poetry run ruff check .
