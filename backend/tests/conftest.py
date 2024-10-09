@@ -9,9 +9,15 @@ from sqlalchemy import create_engine, event
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.data.sqlalchemy_session import AsyncSessionBuilder
 from sqlalchemy_utils import create_database, drop_database
+from async_factory_boy.factory.sqlalchemy import AsyncSQLAlchemyFactory
 
 from app.config import settings
-from app.data.models import Base
+from app.data.models import Base, Project
+
+
+def t_test_session(t_dsn) -> AsyncSession:
+    async_session_builder = AsyncSessionBuilder(database_url=t_dsn, echo=settings.database.echo)
+    return async_session_builder()
 
 @pytest.fixture()
 def test_session(test_postgres_dsn) -> AsyncSession:
@@ -20,10 +26,9 @@ def test_session(test_postgres_dsn) -> AsyncSession:
     yield async_session_builder()
 
 
-@pytest.fixture(scope="session")
-def test_postgres_dsn() -> Callable:
+def t_test_postgres_dsn() -> Callable:
     def build_dsn(**kwargs) -> str:
-        #db_name = "_".join((s.lower() for s in settings.api.title.split(" ")))
+        # db_name = "_".join((s.lower() for s in settings.api.title.split(" ")))
         db_name = "FastApi"
         test_db_dsn = PostgresDsn.build(
             scheme=kwargs.get("scheme") or settings.database.scheme,
@@ -36,6 +41,25 @@ def test_postgres_dsn() -> Callable:
         return test_db_dsn.unicode_string()
 
     return build_dsn
+
+
+@pytest.fixture(scope="session")
+def test_postgres_dsn() -> Callable:
+    def build_dsn(**kwargs) -> str:
+        # db_name = "_".join((s.lower() for s in settings.api.title.split(" ")))
+        db_name = "FastApi"
+        test_db_dsn = PostgresDsn.build(
+            scheme=kwargs.get("scheme") or settings.database.scheme,
+            username=kwargs.get("user") or settings.database.user,
+            password=kwargs.get("password") or settings.database.password,
+            host=kwargs.get("host") or settings.database.host,
+            port=kwargs.get("port") or settings.database.port,
+            path=f"/pytest_{db_name}",
+        )
+        return test_db_dsn.unicode_string()
+
+    return build_dsn
+
 
 @pytest.fixture(scope="session")
 def create_db(test_postgres_dsn):
@@ -87,22 +111,6 @@ async def api_client(app: FastAPI) -> AsyncClient:
         yield client
 
 
-class EvenNumberChecker:
-    def __init__(
-            self,
-            reference_count: int,
-            # result_count: int
-    ):
-        self.reference_count = reference_count
-        print(self.reference_count)
-        # self.result_count = result_count
-
-    def __enter__(self):
-        return
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        return
-
 @pytest.fixture()
 def sqlalchemy_assert_max_num_queries(test_session):
     @contextmanager
@@ -139,3 +147,14 @@ def sqlalchemy_assert_num_queries(test_session):
             raise AssertionError(msg)
         event.remove(t_session.sync_session.bind.engine, "before_cursor_execute", before_cursor_execute)
     return check_count_database_queries
+
+@pytest.fixture()
+async def create_projects(test_session):
+    class ProjectFactory(AsyncSQLAlchemyFactory):
+        class Meta:
+            model = Project
+            sqlalchemy_session = test_session()
+
+        name = "w2e2e2dwpdwpedwnd"
+
+    await ProjectFactory.create()
