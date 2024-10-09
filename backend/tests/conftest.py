@@ -1,9 +1,11 @@
+from contextlib import contextmanager
+
 import pytest
 from typing import AsyncGenerator, Callable
 from fastapi import FastAPI
 from httpx import AsyncClient
 from pydantic import PostgresDsn
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, event
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.data.sqlalchemy_session import AsyncSessionBuilder
 from sqlalchemy_utils import create_database, drop_database
@@ -83,3 +85,57 @@ def app(override_get_db_session) -> FastAPI:
 async def api_client(app: FastAPI) -> AsyncClient:
     async with AsyncClient(app=app, base_url="http://test") as client:
         yield client
+
+
+class EvenNumberChecker:
+    def __init__(
+            self,
+            reference_count: int,
+            # result_count: int
+    ):
+        self.reference_count = reference_count
+        print(self.reference_count)
+        # self.result_count = result_count
+
+    def __enter__(self):
+        return
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        return
+
+@pytest.fixture()
+def sqlalchemy_assert_max_num_queries(test_session):
+    @contextmanager
+    def check_max_count_database_queries(ref_count):
+        queries = []
+        t_session = test_session()
+        def before_cursor_execute(conn, cursor, statement, parameters, context, executemany):
+            queries.append(statement)
+        event.listen(t_session.sync_session.bind.engine, "before_cursor_execute", before_cursor_execute)
+        try:
+            assert len(queries) <= ref_count
+            yield queries
+        except AssertionError:
+            msg = f"Database expected max num {ref_count} queries, but {len(queries)} queries were done"
+            raise AssertionError(msg)
+        event.remove(t_session.sync_session.bind.engine, "before_cursor_execute", before_cursor_execute)
+    return check_max_count_database_queries
+
+
+@pytest.fixture()
+def sqlalchemy_assert_num_queries(test_session):
+    @contextmanager
+    def check_count_database_queries(ref_count):
+        queries = []
+        t_session = test_session()
+        def before_cursor_execute(conn, cursor, statement, parameters, context, executemany):
+            queries.append(statement)
+        event.listen(t_session.sync_session.bind.engine, "before_cursor_execute", before_cursor_execute)
+        try:
+            assert len(queries) <= ref_count
+            yield queries
+        except AssertionError:
+            msg = f"Database expected max num {ref_count} queries, but {len(queries)} queries were done"
+            raise AssertionError(msg)
+        event.remove(t_session.sync_session.bind.engine, "before_cursor_execute", before_cursor_execute)
+    return check_count_database_queries
