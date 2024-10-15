@@ -1,4 +1,5 @@
 from contextlib import contextmanager
+import asyncio
 
 import pytest
 from typing import AsyncGenerator, Callable
@@ -150,3 +151,10 @@ def get_factory_session():
     t_dsn = factory_test_postgres_dsn()
     t_session = factory_test_session(t_dsn())
     return t_session()
+
+@pytest.fixture(scope='session')
+def event_loop():
+    policy = asyncio.get_event_loop_policy()
+    loop = policy.new_event_loop()
+    yield loop
+    loop.close()
