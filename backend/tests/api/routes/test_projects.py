@@ -6,6 +6,7 @@ from tests.factories.projects import ProjectFactory
 
 
 @pytest.mark.asyncio
+@pytest.mark.db
 class TestProjects:
     async def test_list(self, api_client: AsyncClient, sqlalchemy_assert_max_num_queries):
         projects_count = 5

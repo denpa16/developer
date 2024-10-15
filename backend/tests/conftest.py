@@ -15,29 +15,33 @@ from app.config import settings
 from app.data.models import Base, Project
 
 
+def get_test_dsn(**kwargs) -> str:
+    db_name = "test_postgres"
+    test_db_dsn = PostgresDsn.build(
+        scheme=kwargs.get("scheme") or settings.database.scheme,
+        username=kwargs.get("user") or settings.database.user,
+        password=kwargs.get("password") or settings.database.password,
+        host=kwargs.get("host") or settings.database.host,
+        port=kwargs.get("port") or settings.database.port,
+        path=f"/pytest_{db_name}",
+    )
+    return test_db_dsn.unicode_string()
+
+def get_async_test_session_builder():
+    test_db_dsn = get_test_dsn(scheme=settings.database.scheme)
+    async_session_builder = AsyncSessionBuilder(database_url=test_db_dsn, echo=settings.database.echo)
+    return async_session_builder
+
+
 @pytest.fixture()
 def test_session(test_postgres_dsn) -> AsyncSession:
-    test_db_dsn = test_postgres_dsn(scheme=settings.database.scheme)
-    async_session_builder = AsyncSessionBuilder(database_url=test_db_dsn, echo=settings.database.echo)
+    async_session_builder = get_async_test_session_builder()
     yield async_session_builder()
 
 
 @pytest.fixture(scope="session")
-def test_postgres_dsn() -> Callable:
-    def build_dsn(**kwargs) -> str:
-        # db_name = "_".join((s.lower() for s in settings.api.title.split(" ")))
-        db_name = "FastApi"
-        test_db_dsn = PostgresDsn.build(
-            scheme=kwargs.get("scheme") or settings.database.scheme,
-            username=kwargs.get("user") or settings.database.user,
-            password=kwargs.get("password") or settings.database.password,
-            host=kwargs.get("host") or settings.database.host,
-            port=kwargs.get("port") or settings.database.port,
-            path=f"/pytest_{db_name}",
-        )
-        return test_db_dsn.unicode_string()
-
-    return build_dsn
+def test_postgres_dsn() -> Callable:\
+    return get_test_dsn
 
 
 @pytest.fixture(scope="session")
@@ -127,34 +131,15 @@ def sqlalchemy_assert_num_queries(test_session):
         event.remove(t_session.sync_session.bind.engine, "before_cursor_execute", before_cursor_execute)
     return check_count_database_queries
 
-def factory_test_postgres_dsn() -> Callable:
-    def build_dsn(**kwargs) -> str:
-        # db_name = "_".join((s.lower() for s in settings.api.title.split(" ")))
-        db_name = "FastApi"
-        test_db_dsn = PostgresDsn.build(
-            scheme=kwargs.get("scheme") or settings.database.scheme,
-            username=kwargs.get("user") or settings.database.user,
-            password=kwargs.get("password") or settings.database.password,
-            host=kwargs.get("host") or settings.database.host,
-            port=kwargs.get("port") or settings.database.port,
-            path=f"/pytest_{db_name}",
-        )
-        return test_db_dsn.unicode_string()
-    return build_dsn
-
-
-def factory_test_session(t_dsn) -> AsyncSession:
-    async_session_builder = AsyncSessionBuilder(database_url=t_dsn, echo=settings.database.echo)
-    return async_session_builder()
-
-def get_factory_session():
-    t_dsn = factory_test_postgres_dsn()
-    t_session = factory_test_session(t_dsn())
-    return t_session()
-
 @pytest.fixture(scope="session")
 def event_loop():
     policy = asyncio.get_event_loop_policy()
     loop = policy.new_event_loop()
     yield loop
     loop.close()
+
+def get_factory_session():
+    async_session_builder = get_async_test_session_builder()
+    factory_session = async_session_builder()
+    return factory_session()
+
