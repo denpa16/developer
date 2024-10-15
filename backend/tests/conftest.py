@@ -152,7 +152,7 @@ def get_factory_session():
     t_session = factory_test_session(t_dsn())
     return t_session()
 
-@pytest.fixture(scope='session')
+@pytest.fixture(scope="session")
 def event_loop():
     policy = asyncio.get_event_loop_policy()
     loop = policy.new_event_loop()
