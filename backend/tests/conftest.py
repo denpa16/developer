@@ -28,22 +28,22 @@ def get_test_dsn(**kwargs) -> str:
     return test_db_dsn.unicode_string()
 
 
-def get_async_test_session_builder():
+def get_test_session_builder():
     test_db_dsn = get_test_dsn(scheme=settings.database.scheme)
-    async_session_builder = AsyncSessionBuilder(database_url=test_db_dsn, echo=settings.database.echo)
-    return async_session_builder
+    test_session_builder = AsyncSessionBuilder(database_url=test_db_dsn, echo=settings.database.echo)
+    return test_session_builder
 
 
 def get_factory_session():
-    async_session_builder = get_async_test_session_builder()
-    factory_session = async_session_builder()
+    test_session_builder = get_test_session_builder()
+    factory_session = test_session_builder()
     return factory_session()
 
 
 @pytest.fixture()
 def test_session(test_postgres_dsn) -> AsyncSession:
-    async_session_builder = get_async_test_session_builder()
-    yield async_session_builder()
+    test_session_builder = get_test_session_builder()
+    yield test_session_builder()
 
 
 @pytest.fixture(scope="session")
