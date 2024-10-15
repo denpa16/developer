@@ -27,10 +27,17 @@ def get_test_dsn(**kwargs) -> str:
     )
     return test_db_dsn.unicode_string()
 
+
 def get_async_test_session_builder():
     test_db_dsn = get_test_dsn(scheme=settings.database.scheme)
     async_session_builder = AsyncSessionBuilder(database_url=test_db_dsn, echo=settings.database.echo)
     return async_session_builder
+
+
+def get_factory_session():
+    async_session_builder = get_async_test_session_builder()
+    factory_session = async_session_builder()
+    return factory_session()
 
 
 @pytest.fixture()
@@ -87,7 +94,6 @@ def app(override_get_db_session) -> FastAPI:
     yield app
 
 
-
 @pytest.fixture()
 async def api_client(app: FastAPI) -> AsyncClient:
     async with AsyncClient(app=app, base_url="http://test") as client:
@@ -131,15 +137,10 @@ def sqlalchemy_assert_num_queries(test_session):
         event.remove(t_session.sync_session.bind.engine, "before_cursor_execute", before_cursor_execute)
     return check_count_database_queries
 
+
 @pytest.fixture(scope="session")
 def event_loop():
     policy = asyncio.get_event_loop_policy()
     loop = policy.new_event_loop()
     yield loop
     loop.close()
-
-def get_factory_session():
-    async_session_builder = get_async_test_session_builder()
-    factory_session = async_session_builder()
-    return factory_session()
-
