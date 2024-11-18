@@ -9,6 +9,7 @@ RUN mkdir /app
 COPY pyproject.toml poetry.lock /app/
 WORKDIR /app/
 RUN poetry install --no-interaction --no-ansi
-
+COPY wait-for /usr/bin/
+RUN chmod +x /usr/bin/wait-for
 COPY / /app/
 RUN chmod +x entrypoint.*

@@ -1,6 +1,30 @@
 version: '3.8'
 
 services:
+  nginx:
+    build:
+      context: ./nginx
+    restart: always
+    depends_on:
+      - backend
+    volumes:
+      - local_static:/var/www/local_static/
+      - nuxt:/var/www/nuxt:ro
+      - acme.sh:/acme.sh:delegated
+      - certs:/etc/nginx/certs
+    environment:
+      - ENVIRONMENT=production
+      - SITE_HOST
+      - HTPASSWD
+      - HTPASSWD_MODE
+    ports:
+      - 80:80
+      - 443:443
+    logging:
+      driver: journald
+      options:
+        tag: nginx
+
   backend:
     restart: always
     build:
@@ -16,7 +40,6 @@ services:
       - db
     volumes:
       - static:/app/static/:delegated
-      - internal:/app/internal/:delegated
     logging:
       driver: journald
       options:
@@ -66,12 +89,11 @@ services:
 
 
 volumes:
-  local_static:
   nuxt:
+  local_static:
   acme.sh:
   certs:
   static:
-  internal:
   redisdata:
   postgresdata:
   api_cache:

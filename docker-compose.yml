@@ -11,6 +11,22 @@ x-app_environment: &app_environment
     - POSTGRES_DB
 
 services:
+  nginx:
+    volumes:
+      - nginx_cache:/var/lib/nginx/proxy_cache
+      - static:/var/www/static/:ro
+      - api_cache:/var/lib/nginx/api_cache
+    build:
+      context: ./nginx
+    depends_on:
+      - backend
+    ports:
+      - 80:80
+      - 443:443
+    environment:
+      - TLS_MODE
+      - HTPASSWD_MODE
+      - HTPASSWD
 
   backend:
     build:

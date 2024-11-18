@@ -1,6 +1,11 @@
 version: "3.9"
 
 services:
+  nginx:
+    volumes:
+      - ${TLS_CERTIFICATE}:/etc/nginx/certs/cert.pem
+      - ${TLS_CERTIFICATE_KEY}:/etc/nginx/certs/key.pem
+
   backend:
     restart: unless-stopped
     volumes:
@@ -27,3 +32,6 @@ services:
 volumes:
   postgresdata:
   redisdata:
+  static:
+  nginx_cache:
+  api_cache:
