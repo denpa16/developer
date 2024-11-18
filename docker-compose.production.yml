@@ -1,0 +1,78 @@
+version: '3.8'
+
+services:
+  backend:
+    restart: always
+    build:
+      context: ./backend
+      args:
+        POETRY_PARAMS: "--no-dev"
+    entrypoint: ./entrypoint.production.sh
+    command: >
+              poetry run uvicorn app:app --host 0.0.0.0 --port 8000
+              --workers ${GUNICORN_WORKERS:-5} --timeout-keep-alive 120
+              --limit-max-requests 10000
+    depends_on:
+      - db
+    volumes:
+      - static:/app/static/:delegated
+      - internal:/app/internal/:delegated
+    logging:
+      driver: journald
+      options:
+        tag: backend
+
+  db:
+    restart: always
+    ports:
+      - 127.0.0.1:5432:5432
+    command:
+      - "postgres"
+      - "-c"
+      - "max_connections=150"
+      - "-c"
+      - "shared_buffers=1GB" # 25% от текущей оперативной памяти
+      - "-c"
+      - "effective_cache_size=4GB"
+      - "-c"
+      - "work_mem=32MB" # shared_buffers поделить на max_connections. Если получается меньше 32МБ, то оставить 32МБ
+      - "-c"
+      - "maintenance_work_mem=512MB" # 10% от оперативной памяти
+      - "-c"
+      - "temp_file_limit=10GB"
+      - "-c"
+      - "idle_in_transaction_session_timeout=10s"
+      - "-c"
+      - "lock_timeout=1s"
+      - "-c"
+      - "statement_timeout=60s"
+      - "-c"
+      - "shared_preload_libraries=pg_stat_statements"
+      - "-c"
+      - "pg_stat_statements.max=10000"
+      - "-c"
+      - "pg_stat_statements.track=all"
+    logging:
+      driver: journald
+      options:
+        tag: db
+
+  redis:
+    restart: always
+    logging:
+      driver: journald
+      options:
+        tag: redis
+
+
+volumes:
+  local_static:
+  nuxt:
+  acme.sh:
+  certs:
+  static:
+  internal:
+  redisdata:
+  postgresdata:
+  api_cache:
+  nginx_cache:

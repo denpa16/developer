@@ -18,14 +18,21 @@ if TYPE_CHECKING:
     from app.resources.filters.projects import ProjectFilter
     from app.resources.paginations.projects import ProjectLimitOffsetPagination
 
+
 router = APIRouter(prefix="/projects", tags=["Projects"])
+
+
+
+@router.get("/get_items/{item_id}")
+async def read_item(item_id: int):
+    return {"item_id": item_id}
 
 
 @router.get("/")
 async def list_projects(
     session: AsyncSession = async_session,
     pagination_class: ProjectLimitOffsetPagination = projects_paginator_class,
-    _: ProjectFilter = projects_filter_class,
+    filter_class: ProjectFilter = projects_filter_class,
 ):
     """Список проектов."""
     subquery_max_price = (
@@ -36,12 +43,15 @@ async def list_projects(
         .group_by(Property.project_id)
         .subquery()
     )
-    result = await session.execute(
+    query = (
         select(
             Project,
             func.coalesce(subquery_max_price.c.max_price, 0).label("max_price"),
-        ).outerjoin(subquery_max_price, subquery_max_price.c.project_id == Project.id),
+        )
+        .outerjoin(subquery_max_price, subquery_max_price.c.project_id == Project.id)
     )
+    filter_query = await filter_class(query=query)
+    result = await session.execute(filter_query)
     return pagination_class(results=result.scalars().all())
 
 
@@ -63,3 +73,26 @@ async def project_genplan(
     """Получение проекта."""
     result = await session.execute(select(Project).where(Project.alias == alias))
     return result.scalars().one()
+
+
+async def aliased_list_projects(
+    session: AsyncSession = async_session,
+    pagination_class: ProjectLimitOffsetPagination = projects_paginator_class,
+    _: ProjectFilter = projects_filter_class,
+):
+    """Список проектов."""
+    subquery_max_price = (
+        select(
+            Property.project_id,
+            func.max(Property.price).label("max_price"),
+        )
+        .group_by(Property.project_id)
+        .subquery()
+    )
+    result = await session.execute(
+        select(
+            Project,
+            func.coalesce(subquery_max_price.c.max_price, 0).label("max_price"),
+        ).outerjoin(subquery_max_price, subquery_max_price.c.project_id == Project.id),
+    )
+    return pagination_class(results=result.scalars().all())

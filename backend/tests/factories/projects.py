@@ -12,6 +12,7 @@ class ProjectFactory(AsyncSQLAlchemyFactory):
         sqlalchemy_session = get_factory_session()
 
     name = factory.Sequence(lambda n: f"name_{n}")
+    alias = factory.Sequence(lambda n: f"alias_{n}")
 
 class BuildingFactory(AsyncSQLAlchemyFactory):
     class Meta:

@@ -1,3 +1,4 @@
-from .filter import FilterSet
+from .filter_set import FilterSet
+from .filter import CharFilter, CharInFilter, RelationshipFilter, IntegerInFilter
 
-__all__ = ("FilterSet",)
+__all__ = ("FilterSet", "CharFilter", "CharInFilter", "RelationshipFilter", "IntegerInFilter",)

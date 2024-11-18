@@ -1,0 +1,22 @@
+#!/usr/local/bin/python
+
+from os import getenv
+from socket import AF_INET, SOCK_STREAM, socket
+from time import sleep
+
+tries: int = 0
+host: str = str(getenv("POSTGRES_HOST", "db"))
+port: int = int(getenv("POSTGRES_PORT", "5432"))
+
+sock: socket = socket(AF_INET, SOCK_STREAM)
+
+tries_count: int = 1800
+
+while tries <= tries_count:
+    try:
+        sock.connect((host, port))
+        sock.close()
+        break
+    except OSError:
+        sleep(0.1)
+        tries += 1
