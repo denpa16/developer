@@ -40,3 +40,6 @@ services:
 volumes:
   redisdata:
   postgresdata:
+  static:
+  api_cache:
+  nginx_cache:
