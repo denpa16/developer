@@ -17,7 +17,6 @@ env:
   HTPASSWD_MODE: ${{ vars.HTPASSWD_MODE }}
   HTPASSWD: ${{ vars.HTPASSWD }}
   SITE_HOST: ${{ vars.SITE_HOST }}
-  TESTS_COVERAGE_LEVEL: ${{ TESTS_COVERAGE_LEVEL}}
 
 jobs:
   build:
