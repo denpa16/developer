@@ -34,7 +34,7 @@ jobs:
       - name: checkout repo
         uses: actions/checkout@v3
       - name: run tests
-        run: docker compose -f docker-compose.yml -f docker-compose.test.yml run --rm backend /bin/sh -c "poetry run pytest -p no:warnings --cov-report term:skip-covered"
+        run: docker compose -f docker-compose.yml -f docker-compose.test.yml run --rm backend /bin/sh -c "poetry run pytest"
       - name: stop containers
         run: docker compose -f docker-compose.yml -f docker-compose.test.yml stop || true
       - name: remove containers
