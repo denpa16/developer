@@ -87,6 +87,17 @@ services:
       options:
         tag: redis
 
+  flower:
+    build:
+      context: ./flower
+    command: poetry run celery flower --address=0.0.0.0 --port=5555 --url_prefix=flower --persistent=True
+    environment:
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - FLOWER_PORT=5555
+    depends_on:
+      - celery
+      - celery-beat
+
 
 volumes:
   nuxt:
