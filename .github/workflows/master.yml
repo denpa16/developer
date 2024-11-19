@@ -27,4 +27,4 @@ jobs:
       - name: checkout repo
         uses: actions/checkout@v3
       - name: build backend
-        run:  docker-compose -f docker-compose.yml -f docker-compose.production.yml build backend
+        run:  docker compose -f docker-compose.yml -f docker-compose.production.yml build backend
