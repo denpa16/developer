@@ -29,9 +29,10 @@ jobs:
 
   test:
     runs-on: ubuntu-latest
+    needs: build
     steps:
       - name: checkout repo
         uses: actions/checkout@v3
       - name: start test
-        run: docker-compose -f docker-compose.yml -f docker-compose.test.yml run --rm backend /bin/sh -c "pytest -p no:warnings --cov-report term:skip-covered"
+        run: docker compose -f docker-compose.yml -f docker-compose.test.yml run --rm backend /bin/sh -c "pytest -p no:warnings --cov-report term:skip-covered"
 
