@@ -34,7 +34,7 @@ jobs:
       - name: checkout repo
         uses: actions/checkout@v3
       - name: lint
-        run: docker compose run --rm backend /bin/sh -c "poetry run ruff check . --statistics --config pyproject.toml"
+        run: docker compose -f docker-compose.yml -f docker-compose.production.yml run --rm backend /bin/sh -c "poetry run ruff check . --statistics --config pyproject.toml"
 
   tests:
     runs-on: ubuntu-latest
