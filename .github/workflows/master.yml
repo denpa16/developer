@@ -1,0 +1,30 @@
+name: Developer project workflow
+
+on:
+  push:
+    branches:
+      - master
+
+env:
+  SECRET_KEY: ${{ vars.SECRET_KEY }}
+  POSTGRES_DB: ${{ vars.POSTGRES_DB }}
+  POSTGRES_NAME: ${{ vars.POSTGRES_NAME }}
+  POSTGRES_PORT: ${{ vars.POSTGRES_PORT }}
+  POSTGRES_HOST: ${{ vars.POSTGRES_HOST }}
+  POSTGRES_USER: ${{ vars.POSTGRES_USER }}
+  POSTGRES_PASSWORD: ${{ vars.POSTGRES_PASSWORD }}
+  TLS_MODE: ${{ vars.TLS_MODE }}
+  HTPASSWD_MODE: ${{ vars.HTPASSWD_MODE }}
+  HTPASSWD: ${{ vars.HTPASSWD }}
+  SITE_HOST: ${{ vars.SITE_HOST }}
+
+
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout repo
+        uses: actions/checkout@v3
+      - name: build backend
+        run:  docker-compose -f docker-compose.yml -f docker-compose.production.yml build backend
