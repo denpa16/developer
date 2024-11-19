@@ -17,6 +17,7 @@ env:
   HTPASSWD_MODE: ${{ vars.HTPASSWD_MODE }}
   HTPASSWD: ${{ vars.HTPASSWD }}
   SITE_HOST: ${{ vars.SITE_HOST }}
+  TESTS_COVERAGE_LEVEL: ${{ TESTS_COVERAGE_LEVEL}}
 
 jobs:
   build:
@@ -27,16 +28,18 @@ jobs:
       - name: build backend
         run:  docker compose -f docker-compose.yml -f docker-compose.production.yml build backend
 
-  test:
+  tests:
     runs-on: ubuntu-latest
     needs: build
     steps:
       - name: checkout repo
         uses: actions/checkout@v3
       - name: run tests
-        run: docker compose -f docker-compose.yml -f docker-compose.test.yml run --rm backend /bin/sh -c "poetry run pytest"
+        run: docker compose -f docker-compose.yml -f docker-compose.test.yml run --rm backend /bin/sh -c "poetry run pytest" \
+            -p no:warnings --cov-report term:skip-covered --cov --cov-fail-under=${TESTS_COVERAGE_LEVEL}
       - name: stop containers
         run: docker compose -f docker-compose.yml -f docker-compose.test.yml stop || true
       - name: remove containers
         run: docker compose -f docker-compose.yml -f docker-compose.test.yml rm -s -v || true
-
+      - name: down containers
+        run: docker compose -f docker-compose.yml -f docker-compose.test.yml down -v || true
