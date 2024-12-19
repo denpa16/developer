@@ -39,7 +39,7 @@ async def list_projects(
     result = await session.execute(filter_query)
     return pagination_class(results=result.scalars().all())
 
-@router.get("/facets")
+@router.get("/facets/")
 async def facets_projects(
     session: AsyncSession = async_session,
     pagination_class: ProjectLimitOffsetPagination = projects_paginator_class,
@@ -54,7 +54,7 @@ async def facets_projects(
     )
     return await filter_class.facets(query=query, session=session)
 
-@router.get("/specs")
+@router.get("/specs/")
 async def specs_projects(
     session: AsyncSession = async_session,
     pagination_class: ProjectLimitOffsetPagination = projects_paginator_class,
@@ -70,7 +70,7 @@ async def specs_projects(
     return await filter_class.specs(query=query, session=session)
 
 
-@router.get("/{alias}")
+@router.get("/{alias}/")
 async def retrieve_project(
     alias: str = Path(description="", alias="alias"),
     session: AsyncSession = async_session,
@@ -80,7 +80,7 @@ async def retrieve_project(
     return result.scalars().one()
 
 
-@router.get("/{alias}/genplan")
+@router.get("/{alias}/genplan/")
 async def project_genplan(
     alias: str = Path(description="", alias="alias"),
     session: AsyncSession = async_session,

@@ -28,7 +28,7 @@ class TestProjects:
         projects_count = 5
         projects = [await ProjectFactory() for _ in range(projects_count)]
         [await ProjectFactory() for _ in range(projects_count)]
-        url = f"/api/projects/{projects[0].alias}"
+        url = f"/api/projects/{projects[0].alias}/"
         with sqlalchemy_assert_max_num_queries(1):
             response = await api_client.get(url)
         assert response.status_code == 200
@@ -55,7 +55,7 @@ class TestProjects:
         """Тест фасетов проектов."""
         projects_count = 5
         projects = [await ProjectFactory() for _ in range(projects_count)]
-        url = "/api/projects/facets"
+        url = "/api/projects/facets/"
         with sqlalchemy_assert_max_num_queries(1):
             response = await api_client.get(url)
         assert response.status_code == 200
@@ -71,10 +71,20 @@ class TestProjects:
         """Тест фасетов проектов."""
         projects_count = 5
         projects = [await ProjectFactory() for _ in range(projects_count)]
-        url = "/api/projects/specs"
+        url = "/api/projects/specs/"
         with sqlalchemy_assert_max_num_queries(1):
             response = await api_client.get(url)
         assert response.status_code == 200
-        res_json = response.json()
-        print(res_json)
-        assert res_json == ""
+        specs = response.json()
+        specs_names = ["alias",]
+        for spec in specs:
+            assert spec["name"] in specs_names
+            if spec["name"] == "alias":
+                assert len(spec["choices"]) == projects_count
+                for project in projects:
+                    assert {
+                               "label": str(project.id),
+                               "value": project.alias,
+                           } in spec["choices"]
+
+
