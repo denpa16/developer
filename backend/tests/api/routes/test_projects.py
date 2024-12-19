@@ -50,3 +50,31 @@ class TestProjects:
         assert res_json["id"] == str(projects[0].id)
         assert res_json["name"] == projects[0].name
         assert res_json["alias"] == projects[0].alias
+
+    async def test_facets(self, api_client: AsyncClient, sqlalchemy_assert_max_num_queries):
+        """Тест фасетов проектов."""
+        projects_count = 5
+        projects = [await ProjectFactory() for _ in range(projects_count)]
+        url = "/api/projects/facets"
+        with sqlalchemy_assert_max_num_queries(1):
+            response = await api_client.get(url)
+        assert response.status_code == 200
+        res_json = response.json()
+        assert res_json["count"] == projects_count
+        facets = res_json["facets"]
+        for facet in facets:
+            if facet["name"] == "alias":
+                for project in projects:
+                    assert project.alias in facet["choices"]
+
+    async def test_specs(self, api_client: AsyncClient, sqlalchemy_assert_max_num_queries):
+        """Тест фасетов проектов."""
+        projects_count = 5
+        projects = [await ProjectFactory() for _ in range(projects_count)]
+        url = "/api/projects/specs"
+        with sqlalchemy_assert_max_num_queries(1):
+            response = await api_client.get(url)
+        assert response.status_code == 200
+        res_json = response.json()
+        print(res_json)
+        assert res_json == ""

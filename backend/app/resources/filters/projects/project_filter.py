@@ -6,7 +6,9 @@ class ProjectFilter(FacetFilterSet):
     """Фильтр для проектов."""
 
     alias = CharInFilter()
-    buildings = IntegerInFilter(field_name="building")
+    buildings = IntegerInFilter(field_name="buildings")
+    buildings.facets_skip = True
+    buildings.specs_skip = True
 
     class Meta:
         model = Project

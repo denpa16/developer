@@ -52,8 +52,22 @@ async def facets_projects(
             Project,
         )
     )
-    filter_service = await filter_class.facets(query=query, session=session)
-    return filter_service
+    return await filter_class.facets(query=query, session=session)
+
+@router.get("/specs")
+async def specs_projects(
+    session: AsyncSession = async_session,
+    pagination_class: ProjectLimitOffsetPagination = projects_paginator_class,
+    filter_class: ProjectFilter = projects_filter_class,
+):
+    """Спеки проектов."""
+
+    query = (
+        select(
+            Project,
+        )
+    )
+    return await filter_class.specs(query=query, session=session)
 
 
 @router.get("/{alias}")

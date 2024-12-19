@@ -83,6 +83,15 @@ class FilterSet:
 class FacetFilterSet(FilterSet):
     """FacetFilterset."""
 
+    async def _get_spec_choices(self, field_name, session):
+        result = await session.execute(
+            select(
+                getattr(self.Meta.model, "id"),
+                getattr(self.Meta.model, field_name),
+            )
+        )
+        return [{"label": item[0], "value": item[1]} for item in result.fetchall()]
+
     async def _get_facet_choices(self, field_name, result):
         choices = []
         for item in result:
@@ -90,32 +99,57 @@ class FacetFilterSet(FilterSet):
                 choices.append(attr)
         return choices
 
+    async def specs(self, *_: tuple, **kwargs: dict):
+        self._query = kwargs.get("query")
+        _session = kwargs.get("session")
+        specs = []
+        _filters = await self._get_filters()
+        for filter_name, _filter in _filters.items():
+            name = _filter.field_name if _filter.field_name else filter_name
+            if (
+                _filter.specs_skip if hasattr(_filter, "specs_skip") else False
+            ):
+                continue
+            if hasattr(_filter, "specs"):
+                method = _filter.specs
+                specs.append(
+                    {"name": filter_name, "choices": getattr(self, method)(_session, self.query_params, self._query)}
+                )
+                continue
+            specs.append(
+                {
+                    "name": name,
+                    "choices": await self._get_spec_choices(name, _session),
+                 }
+            )
+        return specs
+
     async def facets(self, *_: tuple, **kwargs: dict):
         self._query = kwargs.get("query")
         _session = kwargs.get("session")
         _filtered_query = await self._filter_query()
-        result = await _session.execute(_filtered_query)
-        _result = result.fetchall()
+        _executed_result = await _session.execute(_filtered_query)
+        _result = _executed_result.fetchall()
         _facets = []
         _count = len(_result)
         _filters = await self._get_filters()
         for filter_name, _filter in _filters.items():
             name = _filter.field_name if _filter.field_name else filter_name
-            _filter_facets_skip = (
+            if (
                 _filter.facets_skip if hasattr(_filter, "facets_skip") else False
-            )
-            if _filter_facets_skip:
+            ):
                 continue
             if hasattr(_filter, "facets"):
                 method = _filter.facets
                 _facets.append(
-                    {"name": filter_name, "choices": getattr(self, method)(_session)}
+                    {"name": filter_name, "choices": getattr(self, method)(_session, self.query_params, _filtered_query)}
                 )
                 continue
+            _item_facets = await self._get_facet_choices(name, _result)
             _facets.append(
                 {
                     "name": name,
-                    "choices": await self._get_facet_choices(name, result),
+                    "choices": _item_facets,
                 }
             )
         return {"facets": _facets, "count": _count}
