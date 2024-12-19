@@ -40,7 +40,7 @@ async def list_projects(
     return pagination_class(results=result.scalars().all())
 
 @router.get("/facets")
-async def list_projects(
+async def facets_projects(
     session: AsyncSession = async_session,
     pagination_class: ProjectLimitOffsetPagination = projects_paginator_class,
     filter_class: ProjectFilter = projects_filter_class,
@@ -52,16 +52,8 @@ async def list_projects(
             Project,
         )
     )
-    # filterset = await filter_class(query=query)
-    try:
-        result = filter_class(query=query)
-        return result
-    except Exception as exc:
-        result = []
-        print(exc)
-    return result
-    # result = await session.execute(filter_query)
-
+    filter_service = await filter_class.facets(query=query, session=session)
+    return filter_service
 
 
 @router.get("/{alias}")
@@ -74,7 +66,7 @@ async def retrieve_project(
     return result.scalars().one()
 
 
-@router.get("/{alias}/genplan/")
+@router.get("/{alias}/genplan")
 async def project_genplan(
     alias: str = Path(description="", alias="alias"),
     session: AsyncSession = async_session,

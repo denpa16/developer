@@ -10,4 +10,3 @@ class ProjectFilter(FacetFilterSet):
 
     class Meta:
         model = Project
-
