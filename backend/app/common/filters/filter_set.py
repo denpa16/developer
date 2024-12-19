@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from sqlalchemy import select
+
 
 from app.common.filters.filter import BaseFilter, BaseInFilter, RelationshipFilter
 
@@ -12,10 +14,11 @@ if TYPE_CHECKING:
 class FilterSet:
     """Filterset."""
 
-    def __init__(self: FilterSet, request: Request) -> None:
+    def __init__(self: FilterSet, request: Request, *_: tuple, **kwargs: dict) -> None:
         """Инициализация."""
         self.request = request
         self.query_params = dict(self.request.query_params)
+        self.session = kwargs.get("session")
 
     async def __call__(self: FilterSet, *args, **kwargs):
         self._query = kwargs.get("query")
@@ -75,3 +78,8 @@ class FilterSet:
                 filters[key] = attr
         return filters
 
+class FacetFilterSet(FilterSet):
+    """FacetFilterset."""
+
+    async def facets(self):
+        return {"facets": [], "count": 0}

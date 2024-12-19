@@ -86,4 +86,27 @@ async def delete_all(session: AsyncSession = async_session):
         for proj in result
     ]
 
+async def aliased_list_projects(
+    session: AsyncSession = async_session,
+    pagination_class: ProjectLimitOffsetPagination = projects_paginator_class,
+    _: ProjectFilter = projects_filter_class,
+):
+    """Список проектов."""
+    subquery_max_price = (
+        select(
+            Property.project_id,
+            func.max(Property.price).label("max_price"),
+        )
+        .group_by(Property.project_id)
+        .subquery()
+    )
+    result = await session.execute(
+        select(
+            Project,
+            func.coalesce(subquery_max_price.c.max_price, 0).label("max_price"),
+        ).outerjoin(subquery_max_price, subquery_max_price.c.project_id == Project.id),
+    )
+    return pagination_class(results=result.scalars().all())
+
+
 ```

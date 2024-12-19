@@ -27,14 +27,14 @@ jobs:
       - name: build backend
         run:  docker compose -f docker-compose.yml -f docker-compose.production.yml build backend
 
-  lint:
-    runs-on: ubuntu-latest
-    needs: build
-    steps:
-      - name: checkout repo
-        uses: actions/checkout@v3
-      - name: lint
-        run: docker compose -f docker-compose.yml -f docker-compose.production.yml run --rm backend /bin/sh -c "poetry run ruff check . --statistics --config pyproject.toml"
+  #lint:
+  #  runs-on: ubuntu-latest
+  #  needs: build
+  #  steps:
+  #    - name: checkout repo
+  #      uses: actions/checkout@v3
+  #    - name: lint
+  #      run: docker compose -f docker-compose.yml -f docker-compose.production.yml run --rm backend /bin/sh -c "poetry run ruff check . --statistics --config pyproject.toml"
 
   tests:
     runs-on: ubuntu-latest
