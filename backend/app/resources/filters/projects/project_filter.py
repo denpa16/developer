@@ -10,5 +10,14 @@ class ProjectFilter(FacetFilterSet):
     buildings.facets_skip = True
     buildings.specs_skip = True
 
+    city = CharInFilter(method="city_filter")
+    city.facets_skip = True
+
+
     class Meta:
         model = Project
+
+
+    async def city_filter(self, query, field_name, field_value):
+        relationship = getattr(self.Meta.model, field_name)
+        return query.where(relationship.has(**{"alias": field_value}))

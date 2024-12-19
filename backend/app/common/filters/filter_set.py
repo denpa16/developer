@@ -44,27 +44,33 @@ class FilterSet:
                     else query_key
                 )
                 if _filter.method:
-                    try:
-                        self._query = getattr(self, _filter.method)(self._query, query_key, value)
-                    except AttributeError:
-                        raise AttributeError
-                if isinstance(_filter, BaseFilter):
+                    self._query = await getattr(self, _filter.method)(self._query, query_key, value)
+                    continue
+                elif isinstance(_filter, BaseFilter):
                     model_field = getattr(self.Meta.model, key)
                     self._query = self._query.where(
                         getattr(model_field, _filter.lookup_expr)(value)
                     )
-                if isinstance(_filter, BaseInFilter):
+                    continue
+                elif isinstance(_filter, BaseInFilter):
                     model_field = getattr(self.Meta.model, key)
                     self._query = self._query.where(
                         getattr(model_field, _filter.lookup_expr)(value.split(","))
                     )
-                if isinstance(_filter, RelationshipFilter):
+                    continue
+                elif isinstance(_filter, RelationshipFilter):
                     if _filter.field_name is None:
                         continue
                     relationship = getattr(self.Meta.model, query_key)
                     self._query = self._query.where(
                         relationship.any(**{_filter.field_name: value})
                     )
+                    # надо рисечить когда has (если фильтр по parent)
+                    # когда any (если фильтр по child)
+                    #self._query = self._query.where(
+                    #    relationship.has(**{_filter.field_name: value})
+                    #)
+                    continue
         return self._query
 
     @classmethod
